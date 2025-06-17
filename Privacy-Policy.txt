@@ -1,0 +1,82 @@
+# Privacy Policy for DeleteThing Chrome Extension
+
+**Last Updated:** [Date]
+
+## Overview
+
+DeleteThing is a Chrome extension designed to streamline the project deletion process on development platforms (Vercel, Netlify, and Cloudflare) by automatically filling in confirmation fields. This privacy policy explains how we handle your data and protect your privacy.
+
+## Information We Do NOT Collect
+
+**We do not collect, store, transmit, or have access to any of your personal data.** Specifically:
+
+- **No user data collection:** We do not collect usernames, email addresses, or any personal identifiers
+- **No project data storage:** Project names and deletion confirmations are only processed locally in your browser
+- **No browsing history:** We do not track or store your browsing habits or history
+- **No analytics or tracking:** We do not use analytics services, tracking pixels, or similar technologies
+- **No remote servers:** The extension operates entirely within your browser without connecting to external servers
+
+## How the Extension Works
+
+DeleteThing operates entirely locally within your browser:
+
+1. **URL Detection:** The extension checks if you're on a supported platform's deletion page
+2. **Local Processing:** When deletion modals appear, the extension extracts project names from the current page's DOM elements
+3. **Auto-filling:** Project names and confirmation text are automatically filled into form fields
+4. **No Data Persistence:** No information is saved or remembered between browser sessions
+
+## Data Processing Details
+
+### What Data is Processed Locally:
+- **Project Names:** Extracted from URL paths and DOM elements on the current page
+- **Confirmation Text:** Platform-specific deletion confirmation phrases (e.g., "delete my project")
+- **DOM Elements:** Form inputs and modal containers for auto-filling functionality
+
+### How Data is Processed:
+- All processing happens within your browser using JavaScript
+- Data is only accessed when you're actively on a deletion page
+- Information is immediately used for auto-filling and then discarded
+- No data is stored in browser storage, cookies, or any persistent storage
+
+## Permissions Explanation
+
+The extension requires certain permissions to function:
+
+- **activeTab:** Only to access the current page when you're on supported platform deletion pages
+- **scripting:** To inject the auto-filling functionality into supported pages
+- **Host permissions (vercel.com, app.netlify.com, dash.cloudflare.com):** To operate on these specific platforms only
+
+These permissions are used exclusively for the extension's core functionality and not for data collection.
+
+## Third-Party Services
+
+DeleteThing does not integrate with, connect to, or share data with any third-party services, APIs, or external servers.
+
+## Data Security
+
+Since we don't collect or store any data:
+- There are no databases or servers that could be compromised
+- Your information never leaves your local browser environment
+- No encryption or data protection measures are needed beyond your browser's built-in security
+
+## Children's Privacy
+
+DeleteThing does not collect personal information from anyone, including children under 13. The extension's functionality does not involve any data collection that would be subject to COPPA or similar regulations.
+
+## Changes to This Policy
+
+If we make changes to this privacy policy, we will update the "Last Updated" date. Since the extension doesn't collect data, any changes would likely be clarifications or updates to better explain our privacy practices.
+
+## Open Source
+
+This extension's source code may be made available for review, demonstrating our commitment to transparency about how your data is (not) handled.
+
+## Contact Information
+
+If you have questions about this privacy policy or the extension's privacy practices, you can:
+- Review the extension's source code to verify our privacy claims
+- Contact us through the Chrome Web Store developer contact information
+
+## Summary
+
+**Bottom Line:** DeleteThing is designed with privacy as a core principle. We built it to work entirely within your browser without any data collection, storage, or transmission. Your project information stays on your device and is only used momentarily to auto-fill deletion forms for your convenience.
