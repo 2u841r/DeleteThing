@@ -25,11 +25,16 @@
     ],
     "action": {
       "default_popup": "popup.html",
-      "default_title": "DeleteThing"
+      "default_title": "DeleteThing",
+      "default_icon": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+      }
     },
     "icons": {
-      "16": "./icon/icon16.png",
-      "48": "./icon/icon48.png",
-      "128": "./icon/icon128.png"
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
     }
   }
