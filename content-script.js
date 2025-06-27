@@ -53,15 +53,11 @@
         domain: 'github.com',
         urlPattern: /github\.com\/[^\/]+\/[^\/]+\/settings/,
         selectors: {
-            deleteButton: 'button[data-test-selector="repo-delete-button"]',
+            modal: 'dialog[id="repo-delete-menu-dialog"]',
             firstConfirmButton: 'button[data-next-stage="2"]',
             secondConfirmButton: 'button[data-next-stage="3"]',
             confirmationInput: 'input[data-test-selector="repo-delete-proceed-confirmation"]',
-            finalDeleteButton: 'button[type="submit"][data-test-selector="repo-delete-proceed-button"]',
-            modal: 'dialog[id="repo-delete-menu-dialog"]',
-            // Additional selectors for better detection
-            anyButtonWithText: 'button',
-            anyInput: 'input[type="text"]'
+            finalDeleteButton: 'button[data-test-selector="repo-delete-proceed-button"]'
         }
     };
 
@@ -73,6 +69,11 @@
         cloudflareWorkers: cloudflareWorkersPlatform,
         github: githubPlatform
     };
+
+    // Global state to track observers and prevent duplicates
+    let currentObserver = null;
+    let isInitialized = false;
+    let githubCheckInterval = null;
 
     // Auto-fill deletion fields for Vercel
     function autoFillVercelFields(modal) {
@@ -171,59 +172,50 @@
         return filled;
     }
 
-    // Handle GitHub deletion process (3-step process)
+    // Handle GitHub deletion process
     function handleGitHubDeletion() {
-        const platform = githubPlatform;
-        let handled = false;
+        const modal = document.querySelector(githubPlatform.selectors.modal);
+        if (!modal || !modal.hasAttribute('open')) return false;
 
         console.log('DeleteThing: Checking GitHub deletion steps...');
 
-        // Step 1: Click "I want to delete this repository" button
-        const firstConfirmButton = document.querySelector(platform.selectors.firstConfirmButton);
+        // Step 1: Auto-click "I want to delete this repository" button
+        const firstConfirmButton = modal.querySelector(githubPlatform.selectors.firstConfirmButton);
         if (firstConfirmButton && firstConfirmButton.textContent.includes('I want to delete this repository')) {
-            console.log('DeleteThing: Step 1 - Clicking "I want to delete this repository"');
-            firstConfirmButton.click();
-            handled = true;
-            return;
+            console.log('DeleteThing: Step 1 - Auto-clicking "I want to delete this repository"');
+            setTimeout(() => {
+                firstConfirmButton.click();
+            }, 100);
+            return true;
         }
 
-        // Step 2: Click "I have read and understand these effects" button
-        const secondConfirmButton = document.querySelector(platform.selectors.secondConfirmButton);
+        // Step 2: Auto-click "I have read and understand these effects" button
+        const secondConfirmButton = modal.querySelector(githubPlatform.selectors.secondConfirmButton);
         if (secondConfirmButton && secondConfirmButton.textContent.includes('I have read and understand these effects')) {
-            console.log('DeleteThing: Step 2 - Clicking "I have read and understand these effects"');
-            secondConfirmButton.click();
-            handled = true;
-            return;
-        }
-
-        // Alternative approach for Step 2: Look for any button with the text
-        if (!handled) {
-            const allButtons = document.querySelectorAll(platform.selectors.anyButtonWithText);
-            for (const button of allButtons) {
-                if (button.textContent.includes('I have read and understand these effects')) {
-                    console.log('DeleteThing: Step 2 - Found button with alternative method');
-                    button.click();
-                    handled = true;
-                    return;
-                }
-            }
+            console.log('DeleteThing: Step 2 - Auto-clicking "I have read and understand these effects"');
+            setTimeout(() => {
+                secondConfirmButton.click();
+            }, 100);
+            return true;
         }
 
         // Step 3: Auto-fill the confirmation input field
-        const confirmationInput = document.querySelector(platform.selectors.confirmationInput);
+        const confirmationInput = modal.querySelector(githubPlatform.selectors.confirmationInput);
         if (confirmationInput && !confirmationInput.value) {
-            // Extract repository name from URL or page
-            let repoName = null;
+            // Get repository name from the data attribute or URL
+            let repoName = confirmationInput.getAttribute('data-repo-nwo');
             
-            // Try to get from URL first
-            const urlParts = window.location.pathname.split('/');
-            if (urlParts.length >= 3) {
-                repoName = `${urlParts[1]}/${urlParts[2]}`; // username/reponame
-            }
-            
-            // If not found in URL, try to get from the page content
             if (!repoName) {
-                const titleElement = document.querySelector('h1.Overlay-title');
+                // Fallback: get from URL
+                const urlParts = window.location.pathname.split('/');
+                if (urlParts.length >= 3) {
+                    repoName = `${urlParts[1]}/${urlParts[2]}`;
+                }
+            }
+
+            if (!repoName) {
+                // Fallback: get from dialog title
+                const titleElement = modal.querySelector('#repo-delete-menu-dialog-title');
                 if (titleElement) {
                     const titleText = titleElement.textContent.trim();
                     const match = titleText.match(/Delete (.+)/);
@@ -233,95 +225,40 @@
                 }
             }
 
-            // Alternative: Look for any text input that might be the confirmation field
-            if (!repoName) {
-                const allInputs = document.querySelectorAll(platform.selectors.anyInput);
-                for (const input of allInputs) {
-                    if (input.placeholder && input.placeholder.includes('repository')) {
-                        // This might be our confirmation input
-                        if (!input.value) {
-                            // Try to get repo name from nearby elements
-                            const parent = input.closest('div');
-                            if (parent) {
-                                const textElements = parent.querySelectorAll('*');
-                                for (const element of textElements) {
-                                    if (element.textContent && element.textContent.includes('/')) {
-                                        const match = element.textContent.match(/([^\/]+\/[^\/\s]+)/);
-                                        if (match) {
-                                            repoName = match[1];
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             if (repoName) {
                 console.log('DeleteThing: Step 3 - Auto-filling confirmation field with:', repoName);
                 
-                // Focus the input first
-                confirmationInput.focus();
-                
-                // Clear any existing value
-                confirmationInput.value = '';
-                confirmationInput.dispatchEvent(new Event('input', { bubbles: true }));
-                confirmationInput.dispatchEvent(new Event('change', { bubbles: true }));
-                
-                // Simulate typing the repository name character by character
-                let currentText = '';
-                const typeInterval = setInterval(() => {
-                    if (currentText.length < repoName.length) {
-                        currentText += repoName[currentText.length];
-                        confirmationInput.value = currentText;
-                        
-                        // Dispatch multiple events to simulate real typing
-                        confirmationInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        confirmationInput.dispatchEvent(new Event('keydown', { bubbles: true, key: repoName[currentText.length - 1] }));
-                        confirmationInput.dispatchEvent(new Event('keypress', { bubbles: true, key: repoName[currentText.length - 1] }));
-                        confirmationInput.dispatchEvent(new Event('keyup', { bubbles: true, key: repoName[currentText.length - 1] }));
-                        confirmationInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    } else {
-                        clearInterval(typeInterval);
-                        
-                        // Final events to ensure validation is triggered
-                        confirmationInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        confirmationInput.dispatchEvent(new Event('change', { bubbles: true }));
-                        confirmationInput.dispatchEvent(new Event('blur', { bubbles: true }));
-                        confirmationInput.dispatchEvent(new Event('focus', { bubbles: true }));
-                        
-                        console.log('DeleteThing: Step 3 - Completed typing simulation');
-                    }
-                }, 50); // Type each character with 50ms delay
-                
-                handled = true;
-            } else {
-                console.log('DeleteThing: Could not find repository name for confirmation');
-            }
-        }
-
-        // If we found a confirmation input but couldn't fill it, try alternative approach
-        if (!handled) {
-            const allInputs = document.querySelectorAll('input[type="text"]');
-            for (const input of allInputs) {
-                if (input.placeholder && input.placeholder.includes('repository') && !input.value) {
-                    const urlParts = window.location.pathname.split('/');
-                    if (urlParts.length >= 3) {
-                        const repoName = `${urlParts[1]}/${urlParts[2]}`;
-                        console.log('DeleteThing: Step 3 - Auto-filling alternative input with:', repoName);
-                        input.value = repoName;
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                        input.dispatchEvent(new Event('change', { bubbles: true }));
-                        handled = true;
-                        break;
-                    }
+                // Clear any existing focus to avoid autofocus blocking
+                if (document.activeElement) {
+                    document.activeElement.blur();
                 }
+                
+                // Wait a bit then focus and fill
+                setTimeout(() => {
+                    confirmationInput.focus();
+                    confirmationInput.value = repoName;
+                    
+                    // Dispatch events to trigger validation
+                    confirmationInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    confirmationInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    confirmationInput.dispatchEvent(new Event('keyup', { bubbles: true }));
+                    
+                    // Additional validation trigger
+                    setTimeout(() => {
+                        confirmationInput.dispatchEvent(new Event('blur', { bubbles: true }));
+                        setTimeout(() => {
+                            confirmationInput.dispatchEvent(new Event('focus', { bubbles: true }));
+                        }, 50);
+                    }, 100);
+                }, 200);
+                
+                return true;
+            } else {
+                console.log('DeleteThing: Could not determine repository name');
             }
         }
 
-        return handled;
+        return false;
     }
 
     // Detect current platform
@@ -359,30 +296,46 @@
         }
     }
 
+    // Clean up existing observers and intervals
+    function cleanup() {
+        if (currentObserver) {
+            currentObserver.disconnect();
+            currentObserver = null;
+        }
+        if (githubCheckInterval) {
+            clearInterval(githubCheckInterval);
+            githubCheckInterval = null;
+        }
+        isInitialized = false;
+    }
+
     // Main function to watch for modals and GitHub deletion process
     function watchForDeletionModals() {
+        // Clean up any existing observers first
+        cleanup();
+
         const platform = getCurrentPlatform();
         if (!platform) return;
 
         console.log('DeleteThing: Platform detected:', platform.key);
+        isInitialized = true;
 
         if (platform.key === 'github') {
-            // For GitHub, we need to watch for the deletion dialog and handle the 3-step process
-            const observer = new MutationObserver((mutations) => {
+            // For GitHub, watch for the deletion dialog
+            currentObserver = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.type === 'childList') {
                         mutation.addedNodes.forEach((node) => {
-                            if (node.nodeType === 1) { // Element node
-                                // Check if the added node or its children contain the GitHub deletion dialog
+                            if (node.nodeType === 1) {
+                                // Check if the GitHub deletion dialog appeared or was modified
                                 const modal = node.matches && node.matches(githubPlatform.selectors.modal) ? 
                                              node : node.querySelector && node.querySelector(githubPlatform.selectors.modal);
                                 
                                 if (modal) {
                                     console.log('DeleteThing: GitHub deletion dialog detected');
-                                    // Wait a bit for the dialog to fully render
                                     setTimeout(() => {
                                         handleGitHubDeletion();
-                                    }, 300);
+                                    }, 500);
                                 }
                             }
                         });
@@ -390,55 +343,38 @@
                 });
             });
 
-            // Start observing
-            observer.observe(document.body, {
+            // Start observing with comprehensive options
+            currentObserver.observe(document.body, {
                 childList: true,
                 subtree: true
             });
 
-            // Also check if modal is already present
-            setTimeout(() => {
-                handleGitHubDeletion();
-            }, 500);
-
-            // Set up periodic checks for GitHub deletion process
-            let checkCount = 0;
-            const maxChecks = 20; // Check for 10 seconds (20 * 500ms)
-            const checkInterval = setInterval(() => {
-                checkCount++;
-                const handled = handleGitHubDeletion();
-                
-                // Stop checking if we've handled something or reached max checks
-                if (handled || checkCount >= maxChecks) {
-                    clearInterval(checkInterval);
-                    if (checkCount >= maxChecks) {
-                        console.log('DeleteThing: Stopped checking GitHub deletion after max attempts');
-                    }
+            // Set up periodic checks when dialog is open
+            githubCheckInterval = setInterval(() => {
+                const modal = document.querySelector(githubPlatform.selectors.modal);
+                if (modal && modal.hasAttribute('open')) {
+                    handleGitHubDeletion();
                 }
-            }, 500);
+            }, 300);
 
             return;
         }
 
         // For other platforms, use the existing modal detection logic
-        const observer = new MutationObserver((mutations) => {
+        currentObserver = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === 1) { // Element node
-                            // Check if the added node or its children contain the modal
+                        if (node.nodeType === 1) {
                             const modal = node.matches && node.matches(platform.selectors.modal) ? 
                                          node : node.querySelector && node.querySelector(platform.selectors.modal);
                             
                             if (modal) {
                                 console.log('DeleteThing: Modal detected for platform:', platform.key);
-                                // Wait a bit for the modal to fully render
                                 setTimeout(() => {
                                     const filled = autoFillDeletionFields(platform);
                                     if (filled) {
                                         console.log('DeleteThing: Fields auto-filled successfully');
-                                    } else {
-                                        console.log('DeleteThing: No fields were filled');
                                     }
                                 }, 300);
                             }
@@ -448,8 +384,7 @@
             });
         });
 
-        // Start observing
-        observer.observe(document.body, {
+        currentObserver.observe(document.body, {
             childList: true,
             subtree: true
         });
@@ -460,11 +395,43 @@
         }, 500);
     }
 
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', watchForDeletionModals);
-    } else {
+    // Initialize the script
+    function initialize() {
+        console.log('DeleteThing: Initializing...');
         watchForDeletionModals();
     }
+
+    // Handle both initial load and navigation changes
+    function handlePageChange() {
+        // Wait a bit for the page to settle after navigation
+        setTimeout(() => {
+            if (!isInitialized || getCurrentPlatform()) {
+                initialize();
+            }
+        }, 1000);
+    }
+
+    // Listen for various page change events
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        initialize();
+    }
+
+    // Listen for GitHub's Turbo navigation events
+    document.addEventListener('turbo:load', handlePageChange);
+    document.addEventListener('turbo:render', handlePageChange);
+    
+    // Listen for general navigation events
+    window.addEventListener('popstate', handlePageChange);
+    
+    // Also listen for focus changes that might indicate navigation
+    let lastUrl = window.location.href;
+    setInterval(() => {
+        if (window.location.href !== lastUrl) {
+            lastUrl = window.location.href;
+            handlePageChange();
+        }
+    }, 1000);
 
 })();
