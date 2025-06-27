@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "DeleteThing",
-  "version": "1.1",
+  "version": "2.1",
   "description": "Automatically fills deletion confirmation fields for Vercel, Netlify, Cloudflare Pages, and GitHub",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab"],
   "host_permissions": [
     "https://vercel.com/*",
     "https://app.netlify.com/*",
