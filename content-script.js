@@ -74,6 +74,7 @@
     let currentObserver = null;
     let isInitialized = false;
     let githubCheckInterval = null;
+    let currentPlatform = null;
 
     // Auto-fill deletion fields for Vercel
     function autoFillVercelFields(modal) {
@@ -233,7 +234,6 @@
                     document.activeElement.blur();
                 }
                 
-                // Wait a bit then focus and fill
                 setTimeout(() => {
                     confirmationInput.focus();
                     confirmationInput.value = repoName;
@@ -243,14 +243,13 @@
                     confirmationInput.dispatchEvent(new Event('change', { bubbles: true }));
                     confirmationInput.dispatchEvent(new Event('keyup', { bubbles: true }));
                     
-                    // Additional validation trigger
                     setTimeout(() => {
                         confirmationInput.dispatchEvent(new Event('blur', { bubbles: true }));
                         setTimeout(() => {
                             confirmationInput.dispatchEvent(new Event('focus', { bubbles: true }));
-                        }, 50);
-                    }, 100);
-                }, 200);
+                        }, 10);
+                    }, 30);
+                }, 50);
                 
                 return true;
             } else {
@@ -307,6 +306,7 @@
             githubCheckInterval = null;
         }
         isInitialized = false;
+        currentPlatform = null;
     }
 
     // Main function to watch for modals and GitHub deletion process
@@ -315,10 +315,20 @@
         cleanup();
 
         const platform = getCurrentPlatform();
-        if (!platform) return;
+        if (!platform) {
+            console.log('DeleteThing: No supported platform detected');
+            return;
+        }
+
+        // Don't reinitialize if we're already watching the same platform
+        if (isInitialized && currentPlatform && currentPlatform.key === platform.key) {
+            console.log('DeleteThing: Already initialized for platform:', platform.key);
+            return;
+        }
 
         console.log('DeleteThing: Platform detected:', platform.key);
         isInitialized = true;
+        currentPlatform = platform;
 
         if (platform.key === 'github') {
             // For GitHub, watch for the deletion dialog
@@ -355,7 +365,7 @@
                 if (modal && modal.hasAttribute('open')) {
                     handleGitHubDeletion();
                 }
-            }, 300);
+            }, 200);
 
             return;
         }
@@ -403,10 +413,15 @@
 
     // Handle both initial load and navigation changes
     function handlePageChange() {
+        console.log('DeleteThing: Page change detected, URL:', window.location.href);
         // Wait a bit for the page to settle after navigation
         setTimeout(() => {
-            if (!isInitialized || getCurrentPlatform()) {
+            const platform = getCurrentPlatform();
+            if (platform) {
+                console.log('DeleteThing: Reinitializing for platform:', platform.key);
                 initialize();
+            } else {
+                console.log('DeleteThing: No supported platform after navigation');
             }
         }, 1000);
     }
@@ -418,20 +433,28 @@
         initialize();
     }
 
-    // Listen for GitHub's Turbo navigation events
+    // Listen for navigation events (covers most SPA frameworks)
     document.addEventListener('turbo:load', handlePageChange);
     document.addEventListener('turbo:render', handlePageChange);
-    
-    // Listen for general navigation events
     window.addEventListener('popstate', handlePageChange);
     
-    // Also listen for focus changes that might indicate navigation
+    // Listen for Next.js navigation (Vercel uses Next.js)
+    window.addEventListener('routeChangeComplete', handlePageChange);
+    
+    // Listen for React Router navigation
+    window.addEventListener('locationchange', handlePageChange);
+    
+    // Custom event that some SPAs dispatch
+    window.addEventListener('navigate', handlePageChange);
+    
+    // URL change detection for SPAs that don't dispatch events
     let lastUrl = window.location.href;
     setInterval(() => {
         if (window.location.href !== lastUrl) {
+            console.log('DeleteThing: URL change detected:', lastUrl, '->', window.location.href);
             lastUrl = window.location.href;
             handlePageChange();
         }
-    }, 1000);
+    }, 500); // Check every 500ms for URL changes
 
 })();
