@@ -16,8 +16,10 @@ Download this repo, visit [chrome://extensions](chrome://extensions) and Enable 
 Download the Extension from Chrome Web Store. 
 
 # Version Histroy
-v1.1 - Github deletion added. 
-v1.0 - Vercel, Netlify, Cloudflare Pages and Workers. 
+## v1.1 
+Github deletion added. 
+## v1.0 
+Vercel, Netlify, Cloudflare Pages and Workers. 
 
 # Contribution
 Feel free to create Issue / make PR for other cloud providers delete page autofill.
