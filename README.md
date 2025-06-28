@@ -25,7 +25,7 @@ We've all been there. You want to delete a project, repository, or deployment, a
 - **Cloudflare**: Type the project/worker name again
 - **GitHub**: Click through 3 confirmation steps + type the full repository name
 
-It's 2024, and we're still manually typing `my-super-long-project-name-with-hyphens` just to delete something. This repetitive, error-prone process wastes time and breaks your workflow.
+It's 2024, and we're still manually typing, or at least copy-pasting `my-super-long-project-name-with-hyphens` just to delete something. This repetitive, error-prone process wastes time and breaks your workflow.
 
 ## 💡 The Solution
 
