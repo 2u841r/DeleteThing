@@ -28,3 +28,4 @@ Feel free to create Issue / make PR for other cloud providers delete page autofi
 [Openmoji](https://github.com/hfg-gmuend/openmoji)
  for logo. 
 
+![Repo Views](https://repostats.deno.dev/2u841r/DeleteThing)
