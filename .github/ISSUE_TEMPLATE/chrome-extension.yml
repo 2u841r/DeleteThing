@@ -1,0 +1,49 @@
+name: Chrome Extension Issue
+description: Report a bug, give feedback, or request a feature for the Chrome extension
+labels:
+  - needs-triage
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of issue
+      description: What type of issue are you reporting?
+      options:
+        - Bug 🐞
+        - Feature Request 💡
+        - Feedback 💬
+    validations:
+      required: true
+
+  - type: input
+    id: chrome_version
+    attributes:
+      label: Chrome Version
+      placeholder: "e.g. 125.0.6422.113"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux (Ubuntu/Debian/Fedora/Other)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide a clear and concise description of the issue, feedback, or feature request.
+      placeholder: "Describe what happened, what you expected, or what you'd like to see improved."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve the Chrome Extension! 🚀
