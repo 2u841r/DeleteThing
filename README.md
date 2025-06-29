@@ -137,8 +137,8 @@ Reporting Issues
 ## 🎨 Credits
 
 - Logo design by [Openmoji](https://github.com/hfg-gmuend/openmoji)
+- Theo Browne t3․gg, CEO [T3.Chat](https://t3.chat) for Namething. 
 - Inspired by developer frustration worldwide 😅
-
 
 ### Made with ❤️ by developers, for developers who are tired of typing the same thing twice.
 
