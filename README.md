@@ -64,7 +64,7 @@ All steps complete within **1 second** of your initial click.
 ## 📦 Installation
 
 ### Option 1: Chrome Web Store (Recommended)
-[Download from Chrome Web Store]([chrome-web-store-link](https://dub.sh/deletething))
+[Download from Chrome Web Store](https://dub.sh/deletething)
 
 ### Option 2: Local Development
 1. Clone this repository:
