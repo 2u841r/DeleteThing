@@ -24,12 +24,12 @@ We've all been there. You want to delete a project, repository, or deployment, a
 - **Cloudflare**: Type the project/worker name again
 - **GitHub**: Click through 3 confirmation steps + type the full repository name -->
 <p align="center">
-  <img src="./images/1.png" width="200" height="200">
-  <img src="./images/2.png" width="200" height="200">
+  <img src="./images/1.png" width="250" height="200">
+  <img src="./images/2.png" width="250" height="200">
 </p>
 <p align="center">
-  <img src="./images/3.png" width="200" height="200">
-  <img src="./images/4.png" width="200" height="200">
+  <img src="./images/3.png" width="250" height="200">
+  <img src="./images/4.png" width="250" height="200">
 </p>
 
 
