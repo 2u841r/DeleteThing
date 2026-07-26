@@ -151,6 +151,6 @@ Reporting Issues
  </picture>
 </a>
 
-![Repo Views](https://repostats.zizdjbd.workers.dev/2u841r/DeleteThing)
+![Repo Views](https://repostats.zubair.click/2u841r/DeleteThing)
 
 
